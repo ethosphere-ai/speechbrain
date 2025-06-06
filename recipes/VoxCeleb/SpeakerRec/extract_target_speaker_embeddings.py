@@ -8,12 +8,12 @@ import torch
 
 spk_emb_encoder = MelSpectrogramEncoder.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb-mel-spec")
 
-train_dir = '/home/ubuntu/VoiceFilter/output/train'
-test_dir = '/home/ubuntu/VoiceFilter/output/test'
+train_dir = '/workspace/VoiceFilter/output/overlay_new/train'
+test_dir = '/workspace/VoiceFilter/output/overlay_new/test'
 input_wav = '*-norm.wav'
 dvec = '*-dvec.txt'
 ecapa_embedding = '*-ecapa-tdnn_embedding.pt'
-data_dir = train_dir #train_dir
+data_dir = test_dir #train_dir
 
 def find_all(file_format):
     print(os.path.join(data_dir, file_format))
@@ -23,14 +23,17 @@ dvec_list = find_all(dvec)
 ecapa_list = find_all(ecapa_embedding)
 
 print(len(dvec_list), dvec_list[0]) # 99999
-print(len(ecapa_list), ecapa_list[0]) # 99999
+
+if len(ecapa_list) > 0:
+    print(len(ecapa_list), ecapa_list[0]) # 99999
 
 dvec_ids = [dvec.split('/')[-1] for dvec in dvec_list]
 all_ecapa_ids = [dvec.split('/')[-1].split('-')[0]+ecapa_embedding[1:] for dvec in dvec_list]
 ecapa_ids = [ecapa.split('/')[-1] for ecapa in ecapa_list]
 print(len(dvec_ids), dvec_ids[0]) # 99999
 print(len(all_ecapa_ids), all_ecapa_ids[0]) # 99999
-print(len(ecapa_ids), ecapa_ids[0]) # 99999   
+if len(ecapa_list) > 0:
+    print(len(ecapa_ids), ecapa_ids[0]) # 99999   
 
 remaining_ecapa_ids = list(set(all_ecapa_ids)^set(ecapa_ids))
 print(len(remaining_ecapa_ids)) # 99999
@@ -53,7 +56,7 @@ for idx in remaining_ecapa_ids: #range(len(dvec_list)):
             #   print(self.dvec_list[idx])
             dvec_path = f.readline().strip()
 
-            dvec_path = os.path.join('/home/ubuntu/VoiceFilter/', dvec_path)
+            dvec_path = os.path.join('/workspace/VoiceFilter/', dvec_path)
 
             print(dvec_path)    
 
@@ -74,3 +77,4 @@ for idx in remaining_ecapa_ids: #range(len(dvec_list)):
         print(f"Speaker embedding already exists: skipping {embedding_save_path}")    
         # if idx == 1:
         #     break
+    # break
