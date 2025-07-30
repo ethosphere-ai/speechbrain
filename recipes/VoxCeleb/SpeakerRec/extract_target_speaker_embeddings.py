@@ -2,18 +2,16 @@ import os
 import glob
 import torchaudio
 from speechbrain.inference.encoders import MelSpectrogramEncoder
-from speechbrain.utils.fetching import fetch
-from speechbrain.utils.data_utils import split_path
 import torch
 
 spk_emb_encoder = MelSpectrogramEncoder.from_hparams(source="speechbrain/spkrec-ecapa-voxceleb-mel-spec")
 
-train_dir = '/workspace/VoiceFilter/output/overlay_new/train'
-test_dir = '/workspace/VoiceFilter/output/overlay_new/test'
+train_dir = '/home/ubuntu/VoiceFilter/output/all_variations_w_srcid/train'
+test_dir = '/home/ubuntu/VoiceFilter/output/all_variations_w_srcid/test'
 input_wav = '*-norm.wav'
 dvec = '*-dvec.txt'
 ecapa_embedding = '*-ecapa-tdnn_embedding.pt'
-data_dir = test_dir #train_dir
+data_dir = train_dir
 
 def find_all(file_format):
     print(os.path.join(data_dir, file_format))
@@ -28,7 +26,7 @@ if len(ecapa_list) > 0:
     print(len(ecapa_list), ecapa_list[0]) # 99999
 
 dvec_ids = [dvec.split('/')[-1] for dvec in dvec_list]
-all_ecapa_ids = [dvec.split('/')[-1].split('-')[0]+ecapa_embedding[1:] for dvec in dvec_list]
+all_ecapa_ids = [dvec.split('/')[-1].replace("-dvec.txt","")+ecapa_embedding[1:] for dvec in dvec_list]
 ecapa_ids = [ecapa.split('/')[-1] for ecapa in ecapa_list]
 print(len(dvec_ids), dvec_ids[0]) # 99999
 print(len(all_ecapa_ids), all_ecapa_ids[0]) # 99999
@@ -56,15 +54,13 @@ for idx in remaining_ecapa_ids: #range(len(dvec_list)):
             #   print(self.dvec_list[idx])
             dvec_path = f.readline().strip()
 
-            dvec_path = os.path.join('/workspace/VoiceFilter/', dvec_path)
+            dvec_path = dvec_path.replace("./data","/home/ubuntu/VoiceFilter/data")
 
             print(dvec_path)    
 
         INPUT_SPEECH = dvec_path #"/home/ubuntu/Ahad_Signature.wav"# 
-        source, fl = split_path(INPUT_SPEECH)
-        print(f"Fetching {fl} from {source}")
-        path = fetch(fl, source=source, savedir="tmpdir")
-        ref_signal, fs_file = torchaudio.load(path)
+        print(f"Loading audio from {INPUT_SPEECH}")
+        ref_signal, fs_file = torchaudio.load(INPUT_SPEECH)
         spk_embedding = spk_emb_encoder.encode_waveform(ref_signal)
 
         print(f"Speaker embedding shape: {spk_embedding.shape}")
